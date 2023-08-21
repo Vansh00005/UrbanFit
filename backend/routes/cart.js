@@ -90,5 +90,17 @@ router.get("/",verifyTokenAndAdmin, async (req, res) => {  //verifyTokenAndAdmin
     res.status(500).json(err);
   }
 });
+//delete all cart of a user
+router.delete("/delete/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    await Cart.deleteMany({ userId: userId });
+
+    res.status(200).json("Cart entries deleted for user: " + userId);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;

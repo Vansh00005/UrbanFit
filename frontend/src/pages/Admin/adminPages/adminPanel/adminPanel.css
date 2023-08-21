@@ -1,0 +1,15 @@
+.home{
+    flex: 4;
+    /* margin-left:20vw; */
+   }
+
+.side{
+      width:20vw;   
+}
+.container{
+    display:flex;    
+   }
+.homeWidgets{
+    display: flex;
+    margin: 20px;
+}

@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "@material-ui/core";
 import { Search, ShoppingCartOutlined } from "@material-ui/icons";
-import styled from "styled-components";
+import styled,{css} from "styled-components";
 import { mobile } from "../responsive";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -83,8 +83,17 @@ const StyledLink = styled(Link)`
   ${mobile({ fontSize: "12px", marginLeft: "10px" })}
   &:hover {
     color: #ff4500;
-  }
-`;
+  },
+ `;
+ const Username = styled.div`
+  text-decoration: none;
+  // color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px;
+  margin-left:20px;
+  ${mobile({ fontSize: "12px", marginLeft: "10px" })}
+  `;
 
 
 const Navbar = () => {
@@ -95,7 +104,9 @@ const Navbar = () => {
   const userLocalStorage = localStorage.getItem("persist:root");
   const userPersistData = JSON.parse(userLocalStorage);
   const currentUserData = userPersistData?.currentUser ? JSON.parse(userPersistData.currentUser) : null;  
-  const username= currentUserData?.username ;
+  const username= currentUserData?.username;
+  const isAdmin= currentUserData?.isAdmin;
+
 const [cartData,setCartData]=useState([]);
 
   useEffect(() => {
@@ -129,17 +140,25 @@ const [cartData,setCartData]=useState([]);
             <Input placeholder="Search" />
             <Search style={{ color: "gray", fontSize: 16 }} />
           </SearchContainer>
-        </Left>
-        <Center>
+          {isLoggedIn ? (
+  !isAdmin ?  (<Username> {username} </Username>)
+  :
+  (<Username> You're an <b>Admin</b></Username>)                      
+) : ( <></>
+)}
+
+        </Left>      
+         <Center>
           <Logo>UrbanFit</Logo>
         </Center>
         <Right>
-        <StyledLink to="/">Home</StyledLink>   
-        <StyledLink to="/products">PRODUCTS</StyledLink>        
+        <StyledLink to="/"> Home </StyledLink>   
+        <StyledLink to="/products"> PRODUCTS </StyledLink>        
           {isLoggedIn ? (
             <>
-              <MenuItem>Welcome {username}</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        {isAdmin ?  ( <StyledLink to="/adminPanel">ADMIN PANEL</StyledLink>):(<></>)}
+             <StyledLink to="/orders"> ORDERS </StyledLink>  
+              <MenuItem onClick={handleLogout}> Logout</MenuItem>
               <Link to="/cart">
                 <MenuItem>
                   <Badge badgeContent={cartData.length} color="primary" overlap="rectangular">
@@ -150,7 +169,7 @@ const [cartData,setCartData]=useState([]);
             </>
           ) : (
             <>              
-                <StyledLink to="/register">REGISTER</StyledLink>
+                <StyledLink to="/register"> REGISTER </StyledLink>
                <StyledLink to="/login">
                 SIGN IN
               </StyledLink>

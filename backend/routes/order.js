@@ -9,7 +9,7 @@ const router = require("express").Router();
 
 //CREATE
 
-router.post("/", verifyToken, async (req, res) => {
+router.post("/",async (req, res) => {  //removed verifyToken
   const newOrder = new Order(req.body);
 
   try {
@@ -47,9 +47,18 @@ router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET USER ORDERS
-router.get("/find/:userId", verifyTokenAndAuthorization, async (req, res) => {
+router.get("/find/:userId", async (req, res) => {   // verifyTokenAndAuthorization,
   try {
     const orders = await Order.find({ userId: req.params.userId });
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+//get by  orderiD
+router.get("/find_by_orderId/:orderId", async (req, res) => {   // verifyTokenAndAuthorization,
+  try {
+    const orders = await Order.find({_id: req.params.orderId });
     res.status(200).json(orders);
   } catch (err) {
     res.status(500).json(err);
@@ -58,7 +67,7 @@ router.get("/find/:userId", verifyTokenAndAuthorization, async (req, res) => {
 
 // //GET ALL
 
-router.get("/", verifyTokenAndAdmin, async (req, res) => {
+router.get("/", async (req, res) => {   // verifyTokenAndAdmin,
   try {
     const orders = await Order.find();
     res.status(200).json(orders);

@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import Navbar from "../components/navbar";
 import { mobile } from "../responsive";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link,useLocation} from "react-router-dom";
 import axios from 'axios'
 import {useState,useEffect} from 'react'
 
@@ -12,6 +12,7 @@ const Container = styled.div``;
 
 
 const Wrapper = styled.div`
+background-color:#f5fafd;
   padding: 20px;
   ${mobile({ padding: "10px" })}
 `;
@@ -171,109 +172,61 @@ const Button = styled.button`
   cursor:pointer;
 `;
 
-const Cart = () => {
-  const [cartData, setCartData] = useState([]);
+const OneOrder = () => {
+  const location = useLocation();
+  const orderId = location.pathname.split("/")[2];
+  const [orderData,setOrderData] = useState([]);
+
   const isLoggedIn= useSelector((state) => state.currentUser);
   const userLocalStorage = localStorage.getItem("persist:root");
   const userPersistData = JSON.parse(userLocalStorage);
   const currentUserData = userPersistData?.currentUser ? JSON.parse(userPersistData.currentUser) : null;
   
   const userId= currentUserData?.username;
-const [cartTotal,setCartTotal]=useState(0);
+  const Address= currentUserData?.address;
+// const [cartTotal,setCartTotal]=useState(0);
 
   useEffect(() => {
-    const fetchCartData = async () => {
+    const fetchOrderData = async () => {
       if (isLoggedIn) {
         try {
-          const response = await axios.get(`http://localhost:2000/api/carts/finds/${userId}`, {
+          const response = await axios.get(`http://localhost:2000/api/orders/find_by_orderId/${orderId}`, {
          });
-          setCartData(response.data);
-          console.log("cart",response.data);
+          setOrderData(response.data);
+          console.log("order",response.data);
         } catch (error) {
-          console.error('Error fetching cart data:', error);
+          console.error('Error fetching order data:', error);
         }
       } else {
-        setCartData([]); // Empty cart data for logged-out users
+        setOrderData([]); // Empty order data for logged-out users
       }
     };    
-    fetchCartData();
+    fetchOrderData();
   }, [isLoggedIn, userId]);
 
-  useEffect(() => {
-    // Calculate the total cart cost
-    const calculateCartTotal = () => {
-      let total = 0;
-      cartData.forEach((product) => {
-        total += product.quantity * product.price;
-      });
-      setCartTotal(total);
-    };
-    calculateCartTotal();
-  }, [cartData]);
+// const products=orderData[0].products;
+// console.log(orderData);
 
-  const removeFromCart = async (cartId) => {
-    try {
-      await axios.delete(`http://localhost:2000/api/carts/${cartId}`);
-      // After successful deletion, update the cart data to reflect the changes
-      setCartData((prevCartData) =>
-        prevCartData.filter((cartItem) => cartItem._id !== cartId)
-      );
-    } catch (error) {
-      console.error('Error removing item from cart:', error);
-    }
-  };
 
-  const deleteCartEntries = async () => {
-    try {
-      await axios.delete(`http://localhost:2000/api/carts/delete/${userId}`);
-      console.log("Cart entries deleted for user:", userId);
-    } catch (error) {
-      console.error("Error deleting cart entries:", error);
-    }
-  };  
 
-  const handleCheckOut = async () => {
-    try {
-      const response = await axios.post("http://localhost:2000/api/orders", {
-        userId: userId,
-        products: cartData.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          size: item.size,
-          img: item.img,
-        })),
-        amount:cartTotal,
-      });
 
-      console.log("Order created:", response.data);
-      // clear the cart after moving items to the order
-      deleteCartEntries(); 
-      setCartData([]);
-    //   history.push("/orders"); // Redirect to the orders page or any other destination
-    } catch (error) {
-      console.error("Error moving items to order:", error);
-    }
-  };
+  
 
   return (
     <Container>
      <Navbar />
       <Announcement />
       <Wrapper>
-        <Title>YOUR BAG</Title>
+        <Title>ORDER ID: {orderData[0]?._id}</Title>
         <Top>
-          <Link to="/"><TopButton>CONTINUE SHOPPING</TopButton></Link>
-          <TopTexts>
-            <TopText>Shopping Bag(0)</TopText>
-            <TopText>Your Wishlist (0)</TopText>
-          </TopTexts>
-          <TopButton type="filled">CHECKOUT NOW</TopButton>
+          <Link to="/"><TopButton>CONTINUE SHOPPING</TopButton></Link>        
         </Top>
         <Bottom>
           <Info>
-          {cartData.map((product) => (
-              <Product>
+    
+          {orderData.length > 0 && orderData[0].products ? (
+          orderData[0].products.map((product,index) => (
+              <Product key={index}>
                 <ProductDetail>
                   <Image src={product.img} />
                   <Details>
@@ -298,32 +251,39 @@ const [cartTotal,setCartTotal]=useState(0);
                   <ProductPrice>
                     Price:Rs. {product.price * product.quantity}
                   </ProductPrice>
-                  <RemoveButton onClick={() => removeFromCart(product._id)}>Remove from cart</RemoveButton> 
+                  {/* <RemoveButton onClick={() => removeFromCart(product._id)}>Remove from cart</RemoveButton>  */}
                 </PriceDetail>
                 
               </Product>              
-            ))}
-            
+            ))
+            )
+            : (
+              <p>Loading...</p>
+            )}          
           </Info>  
           <Summary>
             <SummaryTitle>ORDER SUMMARY</SummaryTitle>
-            <SummaryItem>
+            {/* <SummaryItem>
               <SummaryItemText>Subtotal</SummaryItemText>
               <SummaryItemPrice>Rs. {cartTotal}</SummaryItemPrice>
-            </SummaryItem>
-            <SummaryItem>
+            </SummaryItem> */}
+            {/* <SummaryItem>
               <SummaryItemText>Estimated Shipping</SummaryItemText>
               <SummaryItemPrice>Rs. 60</SummaryItemPrice>
-            </SummaryItem>
+            </SummaryItem> */}
             <SummaryItem>
-              <SummaryItemText>Shipping Discount</SummaryItemText>
-              <SummaryItemPrice>Rs. -60</SummaryItemPrice>
+              <SummaryItemText>STATUS:</SummaryItemText>
+              <SummaryItemPrice>PENDING</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem type="total">
-              <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>Rs. {cartTotal}</SummaryItemPrice>
+              <SummaryItemText>Total:</SummaryItemText>
+              <SummaryItemPrice>Rs. {orderData[0]?.amount}</SummaryItemPrice>
             </SummaryItem>
-            <Button onClick={handleCheckOut}>CHECKOUT NOW</Button>
+            <SummaryItem type="total">
+              <SummaryItemText>Address:{Address}</SummaryItemText>
+              {/* <p>{Address}</p> */}
+            </SummaryItem>
+            {/* <Button onClick={handleCheckOut}>CHECKOUT NOW</Button> */}
           </Summary>
         </Bottom>
       </Wrapper>
@@ -332,4 +292,4 @@ const [cartTotal,setCartTotal]=useState(0);
   );
 };
 
-export default Cart;
+export default OneOrder;

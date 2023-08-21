@@ -5,9 +5,13 @@ const BASE_URL = "http://localhost:2000/api/";
 //   JSON.parse(JSON.parse(localStorage.getItem("persist:root")).user).currentUser
 //     .accessToken || "";
 
-const user = JSON.parse(localStorage.getItem("persist:root"))?.currentUser;
+const userLocalStorage = localStorage.getItem("persist:root");
+  const userPersistData = JSON.parse(userLocalStorage);
+  const currentUserData = userPersistData?.currentUser ? JSON.parse(userPersistData.currentUser) : null;
+  
+  const TOKEN= currentUserData?.accessToken
 // const currentUser = user && JSON.parse(user).currentUser;
-const TOKEN = user?.accessToken;
+// const TOKEN = user?.accessToken;
 
 export const publicRequest = axios.create({
   baseURL: BASE_URL,
@@ -15,5 +19,5 @@ export const publicRequest = axios.create({
 
 export const userRequest = axios.create({
   baseURL: BASE_URL,
-  header: { token: `Bearer ${TOKEN}` },
+  headers: { Authorization: `Bearer ${TOKEN}` },
 });
